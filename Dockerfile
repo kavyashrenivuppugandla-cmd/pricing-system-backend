@@ -1,11 +1,11 @@
-# Use official JDK 21 image
-FROM eclipse-temurin:21-jdk-alpine
-
-# Set working directory
+# Stage 1: Build the JAR
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy built jar from target folder
-COPY target/*.jar app.jar
-
-# Run the jar
-ENTRYPOINT ["java","-jar","app.jar"]
+# Stage 2: Run the JAR
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+CMD ["java", "-jar", "app.jar"]
